@@ -219,46 +219,38 @@ With this in mind, write the function nthEmirpPrime(n) which takes a non-negativ
 # from cmu_cs3_utils import testFunction, rounded
 
 def isPrime(n):
-    if n < 2:
+    if n < 2: 
         return False
-    if n == 2:
+    elif n == 2:
         return True
-    if n%2 == 0:
+    elif n % 2 == 0:
         return False
-    max_factor = rounded(n**0.5) 
-    for factor in range(3,max_factor+1,2):
-        if n % factor == 0:
+    for i in range(3, rounded(n**0.5)+1, 2):
+        if n % i == 0:
             return False
     return True
     
 def reverseNumber(n):
     result = 0
-    sign = 1 if n > 0 else -1
-    n = abs(n)
-    while n>0:
-        last_digit = n % 10
-        n = n//10
-        result = result * 10 + last_digit
-    return sign * result
+    while n > 0:
+        lastDigit = n % 10
+        result = result * 10 + lastDigit
+        n //= 10
+    return result
 
 def isEmirpPrime(n):
-    if isPrime(n) == False: 
-        return False
-    if n == reverseNumber(n): 
-        return False
-    if isPrime(reverseNumber(n)) == False: 
-        return False
-    else:
+    if isPrime(n) and isPrime(reverseNumber(n)) and n != reverseNumber(n): 
         return True
+    else: return False
 
 def nthEmirpPrime(n):
-    number=0
-    count=-1
-    while count<n:
-        number += 1
-        if isEmirpPrime(number) == True:
+    guess = 0
+    count = 0
+    while count <= n:
+        guess += 1
+        if isEmirpPrime(guess):
             count += 1
-    return number 
+    return guess
 
 # @testFunction
 # def testIsEmirpPrime():
@@ -274,7 +266,7 @@ def nthEmirpPrime(n):
 #     assert(isEmirpPrime(11) == False)
 #     assert(isEmirpPrime(23) == False)
 #     assert(isEmirpPrime(14) == False)
-
+    
 # @testFunction
 # def testNthEmirpPrime():
 #     assert(nthEmirpPrime(0) == 13)
@@ -283,6 +275,7 @@ def nthEmirpPrime(n):
 #     assert(nthEmirpPrime(3) == 37)
 #     assert(nthEmirpPrime(4) == 71)
 #     assert(nthEmirpPrime(5) == 73)
+#     assert(nthEmirpPrime(53) == 1223)
 
 # def main():
 #     testIsEmirpPrime()
@@ -304,33 +297,29 @@ With this in mind, write the function nthEinNumber(n) which takes a non-negative
 ```python
 # from cmu_cs3_utils import testFunction
 
-def isEven(n):
-    if n%2 == 0: return True
-    else: return False
-
 def isEinNumber(n):
-    last_digit = 10**7
-    if n < 10:
-        return True
-    while n>0:
-        second_last_digit = n % 10
-        n = n//10
-        if isEven(second_last_digit) == True:
-            if second_last_digit >= last_digit:
-                return False
-        else:
-            continue
-        last_digit = second_last_digit
-    return True
+    if n < 0:
+        return False
+    result = True
+    lastDigit = 10 ** 7
+    while n > 0:
+        currDigit = n % 10
+        if currDigit % 2 == 0:
+            if currDigit >= lastDigit: 
+                result = False
+            else: 
+                lastDigit = currDigit
+        n //= 10
+    return result
 
 def nthEinNumber(n):
-    number = -1
-    count = -1
+    guess = 0
+    count = 0
     while count < n:
-        number += 1
-        if isEinNumber(number) == True:
+        guess += 1
+        if isEinNumber(guess):
             count += 1
-    return number
+    return guess
 
 # @testFunction
 
@@ -393,13 +382,12 @@ With this in mind, write the function `babylonianSqureRootIterations(n, initialG
 # from cmu_cs3_utils import testFunction
 
 def babylonianSquareRootIterations(n, initialGuess, epsilon):
-    newGuess = (initialGuess + n / initialGuess) / 2
-    difference = abs(newGuess - initialGuess)
+    guess = initialGuess
+    newGuess = (guess + n / guess) / 2
     count = 1
-    while difference > epsilon:
-        initialGuess = newGuess
-        newGuess = (initialGuess + n / initialGuess) / 2
-        difference = abs(newGuess - initialGuess)
+    while abs(guess - newGuess) > epsilon:
+        guess = newGuess
+        newGuess = (guess + n / guess) / 2
         count += 1
     return count
 
@@ -420,6 +408,129 @@ def babylonianSquareRootIterations(n, initialGuess, epsilon):
 
 ```
 
+### stepsToReach495
+
+Backgound: Kaprekar's routine is an algorithm which can be performed on any three digit number, except for numbers with three of the same digit (such as 111). The algorithm always produces the number 495 at the end.
+
+Here are the instructions which describe Kaprekar's routine.
+
+Construct two new numbers by arranging the digits of n in ascending and descending order.
+Subtract the smaller number from the larger one.
+Repeat the process on the resulting number until you reach 495.
+Here is Kaprekar's routine run on the number 251.
+
+Construct the numbers 125 and 521.
+Subtract 125 from 521, which results in 396.
+Repeat the process on the resulting number (396) until you reach 495:
+
+- 396 --> 963 - 369 --> 594
+- 594 --> 954 - 459 --> 495
+
+Note that if the algorithm ever produces a 2 digit number, a zero should be preserved so we consider the number as having three digits. For example, here is Kaprekar's routine run on 898.
+
+- 898 --> 988 - 889 --> 099
+- 099 --> 990 - 099 --> 891
+- 891 --> 981 - 189 --> 792
+- 792 --> 972 - 279 --> 693
+- 693 --> 963 - 369 --> 594
+- 594 --> 954 - 459 --> 495
+
+With this in mind, write the function stepsToReach495(n), which takes a three digit integer n, runs Kaprekar's routine on it, and returns the number of times it completed step 2 of the routine before reaching 495.
+
+stepsToReach495(251)will return 3, because we complete step 2 of Kaprekar's routine 3 times before reaching 495. Similarly, stepsToReach495(898)will return 6.
+
+Return None if the routine cannot be completed because the number has three of the same digit.
+
+
+```python
+# from cmu_cs3_utils import testFunction
+
+def ascend(n):
+    thirdDigit = n % 10
+    secondDigit = (n // 10) % 10
+    firstDigit = n // 100
+    
+    smallest = min(thirdDigit, secondDigit, firstDigit)
+    largest = max(thirdDigit, secondDigit, firstDigit)
+    sumOfDigits = firstDigit + secondDigit + thirdDigit
+    middle = sumOfDigits - smallest - largest
+    
+    result = smallest * 100 + middle * 10 + largest
+    return result
+    
+def reverseDigit(n):
+    result = 0
+    while n > 0:
+        lastDigit = n % 10
+        result = result * 10 + lastDigit
+        n //= 10
+    return result
+
+def stepsToReach495(n):
+    step = 0
+    isZero = False
+    
+    thirdDigit = n % 10
+    secondDigit = (n // 10) % 10
+    firstDigit = n // 100
+    if firstDigit == secondDigit == thirdDigit:
+        return None
+    
+    while n != 495:
+        ascendingN = ascend(n)
+        if ascendingN < 100:
+            isZero = True
+        
+        if isZero:
+            descendingN = reverseDigit(ascendingN) * 10
+        else: 
+            descendingN = reverseDigit(ascendingN)
+        isZero = False
+        
+        maxN, minN = max(ascendingN, descendingN), min(ascendingN, descendingN)
+        n = maxN - minN
+        
+        step += 1
+    return step
+
+# @testFunction
+def testStepsToReach495():
+    assert(stepsToReach495(495) == 0)
+
+    assert(stepsToReach495(594) == 1) # 954 - 459 = 495
+
+    assert(stepsToReach495(396) == 2) # 963 - 369 = 594
+                                      # 954 - 459 = 495
+
+    assert(stepsToReach495(936) == 2) # Same as 396
+
+    assert(stepsToReach495(251) == 3) # 521 - 125 = 396
+                                      # 963 - 369 = 594
+                                      # 954 - 459 = 495
+    
+    assert(stepsToReach495(516) == 1) # 651 - 156 = 495
+
+    assert(stepsToReach495(891) == 4)
+
+    assert(stepsToReach495(898) == 6) # 988 - 889 = 099
+                                      # 990 - 099 = 891
+                                      # 981 - 189 = 792
+                                      # 972 - 279 = 693
+                                      # 963 - 369 = 594
+                                      # 954 - 459 = 495
+
+    assert(stepsToReach495(111) == None)
+    assert(stepsToReach495(555) == None)
+    assert(stepsToReach495(777) == None)
+    assert(stepsToReach495(630) == 2)
+
+def main():
+    testStepsToReach495()
+
+# main()
+
+```
+
 ### occursIn
 
 Write the function `occursIn(haystack, needle)` which takes two non-negative integers, the `haystack` and the `needle`, and returns `True` if the needle is present in the haystack, and `False` otherwise.
@@ -431,43 +542,18 @@ For example, `occursIn(183742, 374)` would return True, because the number 374 a
 # from cmu_cs3_utils import testFunction
 import math
 
-def lastDigit(n):
-    return n%10
-
-def digitCount(n):
-    if n==0:
-        return 1
-    return 1+math.floor(math.log10(abs(n)))
-
 def occursIn(haystack, needle):
-    count = 0
-    needleDigitCount = digitCount(needle)
-    
-    # Special Case 1
-    if needle == 0 and haystack == 0:
+    if haystack == 0 and needle == 0:
         return True
-    
-    # Special Case 2
-    if needle == 0:
-        while haystack > 0:
-            currDigit = haystack % 10
-            if currDigit == 0:
-                return True
-            haystack //= 10
-        return False
-    
-    # General Case
-    while haystack > 0 and needle > 0:
-        if lastDigit(haystack) == lastDigit(needle):
-            haystack //= 10
+    while haystack > 0:
+        currHaystackDigit = haystack % 10
+        currNeedleDigit = needle % 10
+        if currHaystackDigit == currNeedleDigit:
             needle //= 10
-            count += 1
-        else: 
-            haystack //= 10
-    if count == needleDigitCount:
-        return True
-    else: 
-        return False
+        haystack //= 10
+        if needle == 0:
+            return True
+    return False
 
 # @testFunction
 # def testOccursIn():
@@ -501,34 +587,25 @@ With this in mind, write the function `isRotation(x, y)` which takes two non-neg
 # from cmu_cs3_utils import testFunction
 import math
 
-def lastDigit(n):
-    return n % 10
-
 def digitCount(n):
-    if n==0:
+    if n == 0:
         return 1
-    return 1+math.floor(math.log10(abs(n)))
-
+    return 1 + math.floor(math.log10(abs(n)))
+    
 def isRotation(x, y):
-    originalX = x
-    if x == y:
+    if x == 0 and y == 0:
         return True
-    if (y / x) % 10 == 0:
-        return True
-    digitCountX = digitCount(x)
+    digitNumber = digitCount(x)
+    oriX = x
     while x > 0:
-        number = 0
-        lastDigitX = lastDigit(x)
+        currDigit = x % 10
         x //= 10
-        number += x
-        number += lastDigitX * 10 ** (digitCountX-1)
-        if number == y:
+        if (y == currDigit * 10 ** (digitNumber-1) + x or
+            (y / (currDigit * 10 ** (digitNumber-1) + x)) % 10 == 0): 
             return True
-        if number == originalX:
-            break
-        x = number
-    return False
-
+        x = currDigit * 10 ** (digitNumber-1) + x
+        if oriX == x:
+            return False
 
 # @testFunction
 # def testIsRotation():
@@ -550,7 +627,7 @@ def isRotation(x, y):
 # main()
 ```
 
-### integral
+### integral*
 
 trapezoid method
 
@@ -597,6 +674,384 @@ def integral(f, start, end, N):
 
 # def main():
 #     testIntegral()
+
+# main()
+
+```
+
+### gcd
+
+Background: According to Euclid, the greatest common divisor, or gcd, can be found like so:
+
+gcd(x, y) == gcd(y, x % y)
+
+
+```python
+# from cmu_cs3_utils import testFunction
+
+def gcd(x, y):
+    x, y = max(x,y), min(x,y)
+    if x % y == 0: return y
+    while y != 0:
+        x, y = y, x % y
+    return x
+
+# @testFunction
+# def testGcd():
+#     assert(gcd(3, 3) == 3)
+#     assert(gcd(3**6, 3**6) == 3**6)
+#     assert(gcd(3**6, 2**6) == 1)
+#     assert(gcd(2*3*4*5, 3*5) == 15)
+#     x = 1568160 # 2**5 * 3**4 * 5**1 * 11**2
+#     y = 3143448 # 2**3 * 3**6 * 7**2 * 11**1
+#     g = 7128    # 2**3 * 3**4 *        11**1
+#     assert(gcd(x, y) == g)
+
+# def main():
+#     testGcd()
+
+# main()
+```
+
+### nthAdditivePrime
+
+Background: An additive prime is a prime number such that the sum of its digits is also prime.
+
+For example, 113 is prime and 1 + 1 + 3 = 5, which is also prime, so 113 is an additive prime.
+
+With this in mind, write the function nthAdditivePrime(n) which takes a non-negative int n and returns the nth Additive Prime.
+
+
+```python
+# from cmu_cs3_utils import testFunction, rounded
+
+def isPrime(n):
+    if n < 2:
+        return False
+    if n == 2:
+        return True
+    if n % 2 == 0:
+        return False
+    maxFactor = rounded(n**0.5)
+    for i in range(3, maxFactor + 1, 2):
+        if n % i == 0:
+            return False
+    return True
+
+def isAdditivePrime(n):
+    if not isPrime(n):
+        return False
+    else:
+        result = 0
+        while n > 0:
+            result += n % 10
+            n //= 10
+        if isPrime(result):
+            return True
+        else: return False
+
+def nthAdditivePrime(n):
+    guess = 0
+    count = -1
+    while count < n:
+        guess += 1
+        if isAdditivePrime(guess):
+            count += 1
+    return guess
+
+# @testFunction
+# def testIsAdditivePrime():
+#     assert(isAdditivePrime(2) == True)
+#     assert(isAdditivePrime(3) == True)
+#     assert(isAdditivePrime(23) == True)
+#     assert(isAdditivePrime(61) == True)
+#     assert(isAdditivePrime(113) == True)
+#     assert(isAdditivePrime(13) == False)
+#     assert(isAdditivePrime(103) == False)
+#     assert(isAdditivePrime(16) == False)
+    
+
+# @testFunction
+# def testNthAdditivePrime():
+#     assert(nthAdditivePrime(0) == 2)
+#     assert(nthAdditivePrime(1) == 3)
+#     assert(nthAdditivePrime(5) == 23)
+#     assert(nthAdditivePrime(10) == 61)
+#     assert(nthAdditivePrime(15) == 113)
+
+# def main():
+#     testIsAdditivePrime()
+#     testNthAdditivePrime()
+
+# main()
+
+```
+
+### nthPowerfulNumber
+
+Background: A powerful number (also called a squareful number) is defined as a positive integer n such that for every prime factor p, p2 is also a factor of n.
+
+With this in mind, write the function nthPowerfulNumber(n) which takes a non-negative int n, and returns the nth powerful number as described above.
+
+Note: Prime numbers are not powerful numbers.
+
+
+```python
+# from cmu_cs3_utils import testFunction, rounded
+
+def isPrime(n):
+    if n < 2:
+        return False
+    if n == 2:
+        return True
+    if n % 2 == 0:
+        return False
+    maxFactor = rounded(n**0.5)
+    for i in range(3, maxFactor+1,2):
+        if n % i == 0:
+            return False
+    return True
+
+def isPowerfulNumber(n):
+    result = False
+    if n == 1: return True
+    if isPrime(n): return False
+    for i in range(1, n, 1):
+        if n % i == 0:
+            if isPrime(i):
+                if n % (i**2) == 0:
+                    result = True
+                else: return False
+    return result
+
+def nthPowerfulNumber(n):
+    guess = 0
+    count = -1
+    while count < n:
+        guess += 1
+        if isPowerfulNumber(guess):
+            count += 1
+    return guess
+
+# @testFunction
+# def testIsPowerfulNumber():
+#     assert(isPowerfulNumber(1) == True)
+#     assert(isPowerfulNumber(4) == True)
+#     assert(isPowerfulNumber(25) == True)
+#     assert(isPowerfulNumber(64) == True)
+#     assert(isPowerfulNumber(121) == True)
+#     assert(isPowerfulNumber(1000) == True)
+#     assert(isPowerfulNumber(2) == False)
+#     assert(isPowerfulNumber(15) == False)
+
+# @testFunction
+# def testNthPowerfulNumber():
+#     print(nthPowerfulNumber(2))
+#     print(nthPowerfulNumber(3))
+#     print(nthPowerfulNumber(4))
+#     assert(nthPowerfulNumber(0) == 1)
+#     assert(nthPowerfulNumber(1) == 4)
+#     assert(nthPowerfulNumber(5) == 25)
+#     assert(nthPowerfulNumber(10) == 64)
+#     assert(nthPowerfulNumber(15) == 121)
+
+
+# def main():
+#     testIsPowerfulNumber()
+#     testNthPowerfulNumber()
+
+# main()
+
+```
+
+### nthPerfectNumber
+
+Background: A number is perfect if it is equal to the sum of its positive factors less than itself.
+
+For example, 6 is perfect because 6 = 1 + 2 + 3.
+
+With this in mind, write the function nthPerfectNumber(n) which takes a non-negative int n and returns the nth perfect number.
+
+Note: For full credit, you need to write a reasonably fast solution, which uses the same observation that sped up isPrime(). You should only search for factors up to the square root of n.
+
+
+```python
+# from cmu_cs3_utils import testFunction, rounded
+
+def isPerfectNumber(n):
+    result = 0
+    for i in range(1,n,1):
+        if n % i == 0:
+            result += i
+    if result == n:
+        return True
+    else: return False
+
+def nthPerfectNumber(n):
+    guess = 0
+    count = -1
+    while count < n:
+        guess += 1
+        if isPerfectNumber(guess):
+            count += 1
+    return guess
+
+# @testFunction
+# def testIsPerfectNumber():
+#     assert(isPerfectNumber(6) == True)
+#     assert(isPerfectNumber(28) == True)
+#     assert(isPerfectNumber(496) == True)
+#     assert(isPerfectNumber(8128) == True)
+#     assert(isPerfectNumber(1) == False)
+#     assert(isPerfectNumber(30) == False)
+
+# @testFunction
+# def testNthPerfectNumber():
+#     assert(nthPerfectNumber(0) == 6)
+#     assert(nthPerfectNumber(1) == 28)
+#     assert(nthPerfectNumber(2) == 496)  
+#     # assert(nthPerfectNumber(3) == 8128) # this can be slow 
+
+# def main():
+#     testIsPerfectNumber()
+#     testNthPerfectNumber()
+
+# main()
+
+```
+
+### isSemiPrime
+
+Background: A semi-prime is a positive integer that is the product of exactly two prime numbers.
+
+The first few semi-primes are 4, 6, 9, 10, 14, 15...
+
+With this in mind, write the function isSemiPrime(n) which takes in an arbitrary value (possibly not an int) and returns True if it is a semi-prime and False otherwise.
+
+Note: Semi-primes include the squares of prime numbers because the two primes in the product may equal each other.
+
+Another note: If n is not an integer, it is not considered a semi-prime and the function returns False.
+
+
+```python
+# from cmu_cs3_utils import testFunction, rounded
+
+def isPrime(n):
+    if n < 2: return False
+    if n == 2: return True
+    if n % 2 == 0: return False
+    maxFactor = rounded(n**0.5)
+    for i in range(3, maxFactor + 1, 2):
+        if n % i == 0:
+            return False
+    return True
+
+def isSemiPrime(n):
+    if isinstance(n,int) or isinstance(n,float):
+        for i in range(1,int(n),1):
+            if n % i == 0:
+                if isPrime(i) and isPrime(n//i):
+                    return True
+    return False
+
+# @testFunction
+# def testIsSemiPrime():
+#     assert(isSemiPrime(4) == True)
+#     assert(isSemiPrime(21) == True)
+#     assert(isSemiPrime(33) == True)
+#     assert(isSemiPrime(1) == False)
+#     assert(isSemiPrime(7) == False)
+#     assert(isSemiPrime(100) == False)
+#     assert(isSemiPrime('five') == False)
+#     assert(isSemiPrime(2.0) == False)
+
+
+
+
+# def main():
+#     testIsSemiPrime()
+
+# main()
+
+```
+
+### nthLeftTruncatablePrime
+
+Background: A left-truncatable prime is a prime number containing no zero digits in which if the leading (left) digit is continuously removed, then all resulting numbers are prime.
+
+For example, 137 is a left-truncatable prime because 137 is prime, 37 is prime, and 7 is prime. However, 103 is not a left-truncatable prime because even though 103, 03, and 3 are prime, 103 contains a zero digit.
+
+With this in mind, write the function nthLeftTruncatablePrime(n) which takes a non-negative int n, and returns the nth left-truncatable prime as described above.
+
+
+```python
+# from cmu_cs3_utils import testFunction, rounded
+import math
+
+def isPrime(n):
+    if n < 2: return False
+    if n == 2: return True
+    if n % 2 == 0: return False
+    maxFactor = rounded(n**0.5)
+    for i in range(3, maxFactor + 1, 2):
+        if n % i == 0: 
+            return False
+    return True
+
+def digitCount(n):
+    if n == 0:
+        return 1
+    return 1 + math.floor(math.log10(abs(n)))
+    
+def hasZeroDigit(n):
+    while n > 0:
+        currDigit = n % 10
+        if currDigit == 0: return True
+        n //= 10
+    return False
+
+def isLeftTruncatablePrime(n):
+    if n == 0: return False
+    if hasZeroDigit(n): return False
+    while n > 0:
+        if isPrime(n):
+            n = n % (10 ** (digitCount(n) - 1))
+        else:
+            return False
+    return True
+
+def nthLeftTruncatablePrime(n):
+    guess = 0
+    count = 0
+    while count <= n:
+        guess += 1
+        if isLeftTruncatablePrime(guess):
+            count += 1
+    return guess
+
+# @testFunction
+# def testIsLeftTruncatablePrime():
+#     assert(isLeftTruncatablePrime(2) == True)
+#     assert(isLeftTruncatablePrime(113) == True)
+#     assert(isLeftTruncatablePrime(137) == True)
+#     assert(isLeftTruncatablePrime(1223) == True)
+#     assert(isLeftTruncatablePrime(0) == False)
+#     assert(isLeftTruncatablePrime(11) == False)
+#     assert(isLeftTruncatablePrime(103) == False)
+#     assert(isLeftTruncatablePrime(1234) == False)
+
+# @testFunction
+# def testNthLeftTruncatablePrime():
+#     assert(nthLeftTruncatablePrime(0) == 2)
+#     assert(nthLeftTruncatablePrime(1) == 3)
+#     assert(nthLeftTruncatablePrime(5) == 17)
+#     assert(nthLeftTruncatablePrime(10) == 53)
+#     assert(nthLeftTruncatablePrime(15) == 113)
+
+
+# def main():
+#     testIsLeftTruncatablePrime()
+#     testNthLeftTruncatablePrime()
 
 # main()
 
@@ -764,21 +1219,14 @@ For example, `interleave('pto', 'yhn')` returns the string `'python'`. If one st
 ```python
 # from cmu_cs3_utils import testFunction
 
-def firstChar(n):
-    return n[0]
-
-def chopOff(n):
-    return n[1:]
-
 def interleave(s1, s2):
     result = ''
-    while s1 != '' and s2 != '':
-        result += firstChar(s1) + firstChar(s2)
-        s1 = chopOff(s1)
-        s2 = chopOff(s2)
-    result += s1 + s2
-    return result
-
+    length = min(len(s1), len(s2))
+    for i in range(length):
+        result += s1[i] + s2[i]
+    if len(s1) > len(s2): result += s1[length:]
+    if len(s2) > len(s1): result += s2[length:]
+        
 # @testFunction
 # def testInterleave():
 #     assert(interleave('pto', 'yhn') == 'python')
@@ -857,33 +1305,33 @@ Only after you have written encodeSubstitutionCipher(msg, key), write the functi
 ```python
 # from cmu_cs3_utils import testFunction
 
+def index(char):
+    baseChar = 'a' if char.islower() else 'A'
+    i = ord(char) - ord(baseChar)
+    return i
+
 def encodeSubstitutionCipher(msg, key):
     result = ''
     for char in msg:
         if char.isalpha():
-            baseChar = 'a' if char.islower() else 'A'
-            charIndex = ord(char) - ord(baseChar)
-            charIndex = charIndex % 26
-            if baseChar.islower():
-                result += key[charIndex].lower()
+            if char.islower():
+                result += key[index(char)].lower()
             else:
-                result += key[charIndex]
-        else: 
+                result += key[index(char)]
+        else:
             result += char
     return result
 
 def decodeSubstitutionCipher(encodedMsg, key):
     result = ''
-    alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     for char in encodedMsg:
         if char.isalpha():
-            charUpper = char.upper()
-            keyIndex = key.find(charUpper)
             if char.islower():
-                result += alphabet[keyIndex].lower()
+                char = char.upper()
+                result += chr(key.find(char) + ord('a')).lower()
             else:
-                result += alphabet[keyIndex]
-        else: 
+                result += chr(key.find(char) + ord('A'))
+        else:
             result += char
     return result
 
@@ -914,6 +1362,121 @@ def decodeSubstitutionCipher(encodedMsg, key):
 # def main():
 #     testEncodeSubstitutionCipher()
 #     testDecodeSubstitutionCipher()
+
+# main()
+
+```
+
+### encodeVigenereCipher + decodeVigenereCipher
+
+Background: As we have learned, a Caesar Cipher takes a message and a shift, and encodes each letter by shifting it by the given amount. We can strengthen this by changing the amount we shift each letter by.
+
+For example, say we have the message 'ABC' and we use the shifts 3,4,5. Then we shift 'A' by 3 to get 'D', we shift 'B' by 4 to get 'F', and we shift 'C' by 5 to get 'H'. So the encoded message is 'DFH'.
+
+
+```python
+# from cmu_cs3_utils import testFunction
+import math
+
+def doShift(char, shift):
+    shift = ord(shift) - ord('A')
+    baseChar = 'a' if char.islower() else 'A'
+    letterIndex = ord(char) - ord(baseChar)
+    newLetterIndex = (letterIndex + shift) % 26
+    return chr(ord(baseChar) + newLetterIndex)
+
+def encodeVigenereCipher(msg, key):
+    result = ''
+    i = 0
+    for char in msg:
+        if char.isalpha():
+            result += doShift(char, key[i])
+        else:
+            result += char
+        i += 1
+        if i >= len(key):
+            i = 0
+    return result
+
+def doBackShift(char, shift):
+    shift = ord(shift) - ord('A')
+    baseChar = 'a' if char.islower() else 'A'
+    letterIndex = ord(char) - ord(baseChar)
+    newLetterIndex = (letterIndex - shift) % 26
+    return chr(ord(baseChar) + newLetterIndex)
+
+def decodeVigenereCipher(encodedMsg, key):
+    result = ''
+    i = 0
+    for char in encodedMsg:
+        if char.isalpha():
+            result += doBackShift(char, key[i])
+        else:
+            result += char
+        i += 1
+        if i >= len(key):
+            i = 0
+    return result
+
+# @testFunction
+# def testEncodeVigenereCipher():
+#     assert(encodeVigenereCipher('ABC', 'DEF') == 'DFH')
+#     assert(encodeVigenereCipher('I like zoos!', 'CODE') == 'K omms dqcv!')
+#     assert(encodeVigenereCipher('CS3 is fun', 'SCOTTY') == 'UU3 bq hig')
+#     assert(encodeVigenereCipher('', 'A') == '')
+
+# @testFunction
+# def testDecodeVigenereCipher():
+#     assert(decodeVigenereCipher('DFH', 'DEF') == 'ABC')
+#     assert(decodeVigenereCipher('K omms dqcv!', 'CODE') == 'I like zoos!')
+#     assert(decodeVigenereCipher('UU3 bq hig', 'SCOTTY') == 'CS3 is fun')
+#     assert(decodeVigenereCipher('', 'A') == '')
+
+# def main():
+#     testEncodeVigenereCipher()
+#     testDecodeVigenereCipher()
+
+# main()
+
+```
+
+### wordWrap
+
+Write the function wordWrap(text, width) which takes a string text containing only lowercase letters or spaces and a positive integer width, and returns a possibly-multiline string that matches the original string, only with line wrapping at the given width. For example, wordWrap('abc', 3) just returns 'abc', but wordWrap('abc', 2) returns a 2-line string, with 'ab' on the first line and 'c' on the second line.
+
+All spaces should be converted to dashes ('-'), so they can be easily seen in the resulting string.
+
+
+```python
+# from cmu_cs3_utils import testFunction
+import math
+
+def wordWrap(text, width):
+    result = ''
+    while len(text) > 0:
+        result += text[:width] + '\n'
+        text = text[width:]
+    result = result.strip()
+    result = result.replace(' ', '-')
+    return result
+
+# @testFunction
+# def testWordWrap():
+#     assert(wordWrap('abc', 2) == 'ab\nc')
+#     assert(wordWrap('abcd', 2) == 'ab\ncd')
+#     assert(wordWrap('abc', 3) == 'abc')
+#     assert(wordWrap('abcdefghij', 4) == '''\
+# abcd
+# efgh
+# ij''')
+#     assert(wordWrap('a b c de fg', 4) == '''\
+# a-b-
+# c-de
+# -fg''')
+#     assert(wordWrap('abc', 5) == 'abc')
+
+# def main():
+#     testWordWrap()
 
 # main()
 
@@ -1117,6 +1680,209 @@ def nthHappyPrime(n):
 
 # def main():
 #     testNthHappyPrime()
+
+# main()
+
+```
+
+### longestSubpalindrome
+
+Background: A palindrome is a string that is the same when read forwards and backwards. For example, 'abcba' is a palindrome.
+
+With this in mind, write the function longestSubpalindrome(s) which takes a string s and returns the longest palindrome that occurs in s. The palindrome can consist of any consecutive characters, not just letters. For example, longestSubpalindrome('ab-4-be!!!') returns 'b-4-b'.
+
+If there is a tie, return the lexicographically larger value. In Python, a string s1 is lexicographically larger than a string s2 if s1 > s2. Therefore, longestSubpalindrome('abcbce') will return 'cbc' since 'cbc' > 'bcb'.
+
+Note: This function is case-sensitive, so 'A' is not treated the same as 'a' here.
+
+
+```python
+# from cmu_cs3_utils import testFunction
+
+def isSubpalindrome(string):
+    result = True
+    if len(string) % 2 == 0: 
+        for i in range(len(string)//2):
+            if string[i] != string[-i-1]:
+                result = False
+    else:
+        if len(string) == 1: return True
+        for i in range(len(string)//2 + 1):
+            if string[i] != string[-i-1]:
+                result = False
+    return result
+
+def longestSubpalindrome(s):
+    champSubpalindrome = ''
+    champLength = len(champSubpalindrome)
+    for i in range(len(s)):
+        for j in range(len(s)):
+            if isSubpalindrome(s[i:j+1]):
+                if len(s[i:j+1]) > champLength:
+                    champSubpalindrome = s[i:j+1]
+                    champLength = len(champSubpalindrome)
+                if len(s[i:j+1]) == champLength:
+                    if ord(s[i]) > ord(champSubpalindrome[0]):
+                        champSubpalindrome = s[i:j+1]
+    return champSubpalindrome
+
+# @testFunction
+# def testLongestSubpalindrome():
+#     assert(longestSubpalindrome('ab-4-be!!!') == 'b-4-b')
+#     assert(longestSubpalindrome('abcbce') == 'cbc')
+#     assert(longestSubpalindrome('aba') == 'aba')
+#     assert(longestSubpalindrome('a') == 'a')
+#     assert(longestSubpalindrome('abd') == 'd')
+#     assert(longestSubpalindrome('kP:p') == 'p')
+#     assert(longestSubpalindrome('TQwGsyysqH') == 'syys')
+#     assert(longestSubpalindrome('xAtrj') == 'x')
+
+# def main():
+#     testLongestSubpalindrome()
+
+# main()
+
+```
+
+### longestCommonSubstring
+
+If there is a tie, return the lexicographically smaller value. In Python, a string s1 is lexicographically smaller than a string s2 if s1 < s2. Thus, longestCommonSubstring('abcABC', 'zzabZZAB') returns 'AB' and not 'ab' as 'AB' < 'ab'.
+
+
+```python
+# from cmu_cs3_utils import testFunction
+
+def longestCommonSubstring(s1, s2):
+    champString = ''
+    champLength = len(champString)
+    for i in range(len(s1)):
+        for j in range(i, len(s1)):
+            if s2.find(s1[i:j+1]) != -1:
+                if len(s1[i:j+1]) > champLength:
+                    champString = s1[i:j+1]
+                    champLength = len(champString)
+                if len(s1[i:j+1]) == champLength:
+                    if champString == '': continue
+                    if ord(s1[i]) <= ord(champString[0]):
+                        champString = s1[i:j+1]
+    return champString
+
+# @testFunction
+# def testLongestCommonSubstring():
+#     assert(longestCommonSubstring('abcdef', 'abqrcdest') == 'cde')
+#     assert(longestCommonSubstring('abcdef', 'ghi') == '')
+#     assert(longestCommonSubstring('abcABC', 'zzabZZAB') == 'AB')
+#     assert(longestCommonSubstring('abcHIJK', 'aLbNcM') == 'a')
+#     assert(longestCommonSubstring('CRANKYcrabby', 'crabbyIsCRANKY') == 'CRANKY')
+#     assert(longestCommonSubstring('o', 'pokcq') == 'o')
+#     assert(longestCommonSubstring('', 'ZZAB') == '')
+#     assert(longestCommonSubstring('abc', '') == '')
+    
+
+# def main():
+#     testLongestCommonSubstring()
+
+# main()
+
+```
+
+### leastFrequentLetters
+
+Ignore case so 'A' and 'a' are treated the same.
+
+
+```python
+# from cmu_cs3_utils import testFunction
+import string
+
+def leastFrequentLetters(s):
+    leastLetter = ''
+    leastFrequency = 10 ** 7
+    for char in string.ascii_lowercase:
+        currCount = s.lower().count(char)
+        if currCount != 0:
+            if currCount < leastFrequency:
+                leastLetter = char
+                leastFrequency = currCount
+            elif currCount == leastFrequency:
+                leastLetter += char
+    return leastLetter
+
+# @testFunction
+# def testLeastFrequentLetters():
+#     assert(leastFrequentLetters('aDbq dQ') == 'ab')
+#     assert(leastFrequentLetters('Crazy sentences are wild!!!') == 'diltwyz')
+#     assert(leastFrequentLetters('a!*@HH#!') == 'a')
+#     assert(leastFrequentLetters('') == '')
+#     assert(leastFrequentLetters('345623$%@#!#$%') == '')
+#     assert(leastFrequentLetters('apkpaaj') == 'jk')
+
+
+# def main():
+#     testLeastFrequentLetters()
+
+# main()
+
+```
+
+### replaceString
+
+
+```python
+# from cmu_cs3_utils import testFunction
+
+def replaceString(s1, s2, s3):
+    if s2 == s3: return s1
+    while s1.count(str(s2)) != 0:
+        index = s1.find(str(s2))
+        s1 = s1[:index] + str(s3) + s1[index + len(s2):]
+    return s1
+
+# @testFunction
+# def testReplaceString():
+#     assert(replaceString('abadaf', 'a', 'L') == 'LbLdLf')
+#     assert(replaceString('csacademy', 'a', 'A') == 'csAcAdemy')
+#     assert(replaceString('csacademy', 'cs', 'CS') == 'CSacademy')
+#     s = 'markers make marks'
+#     assert(replaceString(s, 'ma', 'ram') == 'ramrkers ramke ramrks')
+#     assert(replaceString(s, 'mar', 'ra') == 'rakers make raks')
+#     assert(replaceString('case', 'a', 'a') == 'case')
+    
+# def main():
+#     testReplaceString()
+
+# main()
+
+```
+
+### hasBalancedParentheses
+
+
+```python
+# from cmu_cs3_utils import testFunction
+
+def hasBalancedParentheses(s):
+    if s.count('(') != s.count(')'): return False
+    leftCount = 0
+    rightCount = 0
+    for char in s:
+        if char == '(': leftCount += 1
+        if char == ')': rightCount += 1
+        if rightCount > leftCount: return False
+    return True
+
+# @testFunction
+# def testHasBalancedParentheses():
+#     assert(hasBalancedParentheses('( ( ( ) ( ) ) ( ) )') == True)
+#     assert(hasBalancedParentheses('( ) )') == False)
+#     assert(hasBalancedParentheses('( ) ) (') == False)
+#     assert(hasBalancedParentheses('( ( ) ) (') == False)
+#     assert(hasBalancedParentheses('(hI!)(Whats up?)(not much)') == True)
+#     assert(hasBalancedParentheses('((((hEy!)hi!)))') == True)
+#     assert(hasBalancedParentheses('!!!!') == True)
+
+# def main():
+#     testHasBalancedParentheses()
 
 # main()
 
